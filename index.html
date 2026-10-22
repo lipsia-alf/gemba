@@ -143,6 +143,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 .field>span{font-weight:600;font-size:14px}
 .vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
 .photo-pick{width:100%;min-height:52px;border-style:dashed}
+.photo-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .photo-big{width:100%;max-height:70vh;object-fit:contain;background:var(--sunk);border-radius:4px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:var(--r);z-index:20;max-width:calc(100vw - 32px)}
 @media (prefers-reduced-motion:no-preference){.area,.finding{transition:border-color .2s}}
@@ -200,6 +201,7 @@ const CATS=["Sicherheit","Qualität","5S / Ordnung","Fluss / Bestand","Standard"
 const S={view:"walk",areas:[],walks:[],findings:[],leit:DEFAULT_LEIT,meta:{},
   activeWalkId:null,walkRendered:null,afilter:"offen",aarea:"",ready:false,persisted:null};
 const photoURL={};
+let pickedFile=null;
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -491,8 +493,9 @@ function findingDlg(f){
     <label class="field"><span>Was hast du gesehen?</span><textarea id="fText" rows="3" placeholder="Beobachtung, möglichst konkret">${esc(f?.text||"")}</textarea></label>
     <div class="field"><span>Thema</span><div class="chips" id="fCat">${CATS.map(c=>`<button type="button" class="chip" data-act="pickCat" data-v="${esc(c)}" aria-pressed="${(f?.cat||"")===c}">${esc(c)}</button>`).join("")}</div></div>
     ${f?"":`<div class="field"><span>Foto (optional)</span>
-      <label class="btn photo-pick" for="fPhoto">Foto aufnehmen oder auswählen</label>
-      <input type="file" id="fPhoto" accept="image/*" class="vh">
+      <div class="photo-row"><label class="btn photo-pick" for="fCam">Foto aufnehmen</label><label class="btn photo-pick" for="fGal">Aus Galerie wählen</label></div>
+      <input type="file" id="fCam" accept="image/*" capture="environment" class="vh">
+      <input type="file" id="fGal" accept="image/*" class="vh">
       <div id="fPrev" class="row" hidden><img id="fPrevImg" class="thumb" alt="Ausgewähltes Foto"><span class="muted" style="font-size:13px">Foto übernommen</span><button type="button" class="link" data-act="clearPhoto">entfernen</button></div></div>`}
     <label class="row" style="gap:8px"><input type="checkbox" id="fHasAct" ${a?"checked":""} style="width:20px;height:20px"> <strong>Maßnahme festlegen</strong></label>
     <div id="fAct" class="stack" ${a?"":"hidden"}>
@@ -502,9 +505,9 @@ function findingDlg(f){
     </div>
     <div class="foot">${f?`<button class="btn danger" data-act="delFinding" data-id="${f.id}" style="margin-right:auto">Löschen</button>`:""}<button class="btn" data-act="close">Abbrechen</button><button class="btn primary" data-act="saveFinding" data-id="${f?.id||""}">Speichern</button></div>`);
   $("#fHasAct").addEventListener("change",e=>{$("#fAct").hidden=!e.target.checked;if(e.target.checked)$("#fWhat").focus()});
-  const fp=$("#fPhoto");if(fp)fp.addEventListener("change",()=>{const file=fp.files&&fp.files[0];const pv=$("#fPrev");
-    if(!file){pv.hidden=true;return}
-    try{$("#fPrevImg").src=URL.createObjectURL(file)}catch(_){}pv.hidden=false;$(".photo-pick").textContent="Anderes Foto wählen"});
+  pickedFile=null;
+  for(const fid of["fCam","fGal"]){const fp=$("#"+fid);if(fp)fp.addEventListener("change",()=>{const file=fp.files&&fp.files[0];fp.value="";if(!file)return;
+    pickedFile=file;try{$("#fPrevImg").src=URL.createObjectURL(file)}catch(_){}$("#fPrev").hidden=false;$(".photo-row").hidden=true})}
 }
 function walkDlg(w){
   const fs=S.findings.filter(f=>f.walkId===w.id);const qs=w.questions||[];const cl=w.checklist||[];const sc=walkScore(w);
@@ -644,7 +647,7 @@ document.addEventListener("click",async e=>{
     if(act==="close")return closeDlg();
     if(act==="afilter"){S.afilter=t.dataset.v;return render()}
     if(act==="pickCat"){t.parentElement.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",String(c===t)));return}
-    if(act==="clearPhoto"){const fp=$("#fPhoto");if(fp)fp.value="";$("#fPrev").hidden=true;$(".photo-pick").textContent="Foto aufnehmen oder auswählen";return}
+    if(act==="clearPhoto"){pickedFile=null;$("#fPrev").hidden=true;$(".photo-row").hidden=false;return}
     if(act==="photo")return openDlg(`<img class="photo-big" src="${photoURL[id]||""}" alt="Foto zum Befund"><div class="foot"><button class="btn" data-act="close">Schließen</button></div>`);
     if(act==="showWalk"){const w=S.walks.find(x=>x.id===id);if(w)walkDlg(w);return}
     if(act==="newArea")return areaDlg(null);
@@ -703,7 +706,7 @@ document.addEventListener("click",async e=>{
       const action=has?{what:$("#fWhat").value.trim(),who:$("#fWho").value.trim(),due:$("#fDue").value||"",status:old?.action?.status||"offen",doneAt:old?.action?.doneAt||null}:null;
       t.disabled=true;
       if(old){Object.assign(old,{text,cat,action});await save("findings",old);closeDlg();toast("Befund aktualisiert");refresh();return}
-      let photo=null;const file=$("#fPhoto")?.files?.[0];
+      let photo=null;const file=pickedFile;pickedFile=null;
       if(file){const blob=await shrink(file);photo=uid();await idbDo("photos",os=>os.put(blob,photo));photoURL[photo]=URL.createObjectURL(blob)}
       const w=S.walks.find(x=>x.id===S.activeWalkId);
       const f={id:uid(),walkId:S.activeWalkId||null,areaId:w?w.areaId:"",text,cat,photo,action,createdAt:new Date().toISOString()};

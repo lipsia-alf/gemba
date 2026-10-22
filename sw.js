@@ -1,5 +1,5 @@
 // Offline-Speicher für die App-Dateien. Bei jeder Änderung an der App die Versionsnummer erhöhen.
-const CACHE = "gemba-v1";
+const CACHE = "gemba-v2";
 const SHELL = [
   "./",
   "./index.html",
