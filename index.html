@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gemba-Rundgang</title>
+<meta name="theme-color" content="#18212b">
+<meta name="description" content="Routinierte Gemba-Walks auf dem Shopfloor – offline.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Werkzeug für den Shopfloor. Klebeband-Markierung als Kopfband, große Tippflächen, eine Spalte am Telefon, zwei am Desktop. */
+:root{
+  --bg:#eceff2; --surface:#ffffff; --sunk:#e3e7eb; --ink:#18212b; --muted:#566271; --line:#d0d6dc;
+  --accent:#f2b705; --accent-ink:#18212b;
+  --ok:#24734a; --ok-bg:#dcefe3; --warn:#9a5a00; --warn-bg:#f8ead2; --bad:#b8321f; --bad-bg:#f7dcd7;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161c; --surface:#1a2129; --sunk:#141a20; --ink:#e4e9ee; --muted:#97a3b0; --line:#2b3540;
+  --accent:#f5c21b; --accent-ink:#11161c;
+  --ok:#62c48f; --ok-bg:#16362a; --warn:#e8a64a; --warn-bg:#3a2a12; --bad:#f06e5d; --bad-bg:#3d1d19;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161c; --surface:#1a2129; --sunk:#141a20; --ink:#e4e9ee; --muted:#97a3b0; --line:#2b3540;
+  --accent:#f5c21b; --accent-ink:#11161c;
+  --ok:#62c48f; --ok-bg:#16362a; --warn:#e8a64a; --warn-bg:#3a2a12; --bad:#f06e5d; --bad-bg:#3d1d19;
+  color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;padding-block:0 env(safe-area-inset-bottom,0px);background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--ink);color:var(--bg)}
+.top-inner{max-width:1080px;margin:0 auto;padding-block:10px 0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 20px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:.02em;line-height:1;padding-bottom:10px;text-transform:uppercase}
+.brand small{display:block;font-family:var(--f-mono);font-weight:400;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.7;margin-top:4px}
+nav.tabs{display:flex;gap:2px;margin-left:auto;overflow-x:auto}
+nav.tabs button{background:none;border:0;color:inherit;opacity:.7;padding:10px 12px 12px;font-family:var(--f-display);font-weight:600;font-size:17px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;border-bottom:4px solid transparent;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{opacity:1;border-bottom-color:var(--accent)}
+nav.tabs .badge{font-family:var(--f-mono);font-size:11px;background:var(--bad);color:#fff;border-radius:9px;padding:0 6px;margin-left:4px;vertical-align:2px}
+.tape{height:8px;background:repeating-linear-gradient(-45deg,var(--accent) 0 14px,var(--ink) 14px 28px)}
+
+main{max-width:1080px;margin:0 auto;padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1.1;margin:0;text-wrap:balance}
+h1{font-size:30px} h2{font-size:22px} h3{font-size:18px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.spread{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between}
+.stack{display:grid;gap:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+.banner{background:var(--warn-bg);color:var(--warn);border-radius:var(--r);padding:10px 14px;font-weight:500}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.small{min-height:34px;padding:0 10px;font-size:13px}
+.btn.big{min-height:56px;font-size:17px;padding:0 22px}
+.btn[disabled]{opacity:.5;cursor:default}
+.link{background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* Bereichskarten */
+.areas{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px}
+.area{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:10px;align-content:space-between;border-left:6px solid var(--line)}
+.area.due{border-left-color:var(--bad)} .area.soon{border-left-color:var(--warn)} .area.fine{border-left-color:var(--ok)}
+.area .name{font-family:var(--f-display);font-weight:700;font-size:21px;text-transform:uppercase;line-height:1.1}
+.pill{display:inline-block;font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;padding:2px 8px;border-radius:20px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.pill.bad{background:var(--bad-bg);color:var(--bad)} .pill.warn{background:var(--warn-bg);color:var(--warn)} .pill.ok{background:var(--ok-bg);color:var(--ok)}
+
+/* Laufender Rundgang */
+.walkhead{background:var(--ink);color:var(--bg);border-radius:var(--r);padding:16px;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between}
+.walkhead .eyebrow{color:inherit;opacity:.7}
+.q{display:grid;gap:6px}
+.q label{font-weight:600}
+textarea,input[type=text],input[type=date],input[type=number],select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;min-height:44px}
+textarea{min-height:70px;resize:vertical}
+.check{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.check:first-child{border-top:0}
+.seg{display:flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.seg button{border:0;background:var(--surface);min-height:44px;min-width:52px;padding:0 10px;cursor:pointer;font-family:var(--f-mono);font-size:13px;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"][data-v="ok"]{background:var(--ok);color:var(--surface)}
+.seg button[aria-pressed="true"][data-v="nok"]{background:var(--bad);color:var(--surface)}
+.seg button[aria-pressed="true"][data-v="na"]{background:var(--muted);color:var(--surface)}
+@media (max-width:480px){.check{grid-template-columns:1fr}}
+
+/* Befunde / Maßnahmen */
+.finding{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);border-left:6px solid var(--line);min-width:0}
+.finding.st-open{border-left-color:var(--warn)} .finding.st-late{border-left-color:var(--bad)} .finding.st-done{border-left-color:var(--ok)}
+.thumb{width:72px;height:72px;border-radius:4px;object-fit:cover;background:var(--sunk);cursor:pointer;border:0;padding:0;display:block}
+.thumb.empty{display:grid;place-items:center;font-family:var(--f-mono);font-size:10px;color:var(--muted);cursor:default;text-align:center}
+.finding .body{min-width:0;display:grid;gap:6px}
+.finding p{margin:0;overflow-wrap:anywhere}
+.action{background:var(--sunk);border-radius:4px;padding:8px 10px;display:grid;gap:4px}
+.action .what{font-weight:600;overflow-wrap:anywhere}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:6px 12px;cursor:pointer;font-size:13px;min-height:36px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* Auswertung */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:2px}
+.kpi .v{font-family:var(--f-display);font-weight:700;font-size:40px;line-height:1}
+.kpi.alert .v{color:var(--bad)}
+.chart{overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:420px;height:auto}
+.chart .bar{fill:var(--ink)} .chart .bar.now{fill:var(--accent)}
+.chart .lbl{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.chart .val{fill:var(--ink);font-family:var(--f-mono);font-size:12px}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.hbar{display:grid;grid-template-columns:minmax(90px,140px) 1fr 36px;gap:10px;align-items:center;font-size:14px}
+.hbar .track{height:14px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.hbar .fill{height:100%;background:var(--ink)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th{text-align:left;font-family:var(--f-mono);font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:2px solid var(--ink)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+td.num,th.num{text-align:right}
+
+.empty-state{border:2px dashed var(--line);border-radius:var(--r);padding:24px;text-align:center;display:grid;gap:10px;justify-items:center;color:var(--muted)}
+.list-walks{display:grid;gap:0}
+.list-walks button{display:grid;grid-template-columns:1fr auto;gap:10px;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:10px 2px;cursor:pointer;width:100%}
+.list-walks button:first-child{border-top:0}
+
+dialog{border:0;border-radius:8px;padding:0;background:var(--surface);color:var(--ink);width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 40px)}
+dialog::backdrop{background:rgba(10,14,18,.55)}
+.dlg{padding:18px;display:grid;gap:14px}
+.dlg .foot{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+.field{display:grid;gap:6px}
+.field>span{font-weight:600;font-size:14px}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.photo-pick{width:100%;min-height:52px;border-style:dashed}
+.photo-big{width:100%;max-height:70vh;object-fit:contain;background:var(--sunk);border-radius:4px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:var(--r);z-index:20;max-width:calc(100vw - 32px)}
+@media (prefers-reduced-motion:no-preference){.area,.finding{transition:border-color .2s}}
+
+img{max-width:100%}
+[hidden]{display:none!important}
+@media (max-width:480px){nav.tabs{margin-left:0;width:100%}nav.tabs button{font-size:15px;padding:8px 8px 10px;flex:1}.brand{font-size:22px;padding-bottom:4px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">Gemba-Rundgang<small id="who">Shopfloor · Hinsehen, Fragen, Verstehen</small></div>
+    <nav class="tabs" role="tablist" aria-label="Bereiche der App">
+      <button role="tab" data-tab="walk" aria-selected="true">Rundgang</button>
+      <button role="tab" data-tab="actions" aria-selected="false">Maßnahmen<span id="lateBadge" class="badge" hidden></span></button>
+      <button role="tab" data-tab="stats" aria-selected="false">Auswertung</button>
+      <button role="tab" data-tab="setup" aria-selected="false">Bereiche</button>
+    </nav>
+  </div>
+  <div class="tape" aria-hidden="true"></div>
+</header>
+
+<main id="app">
+  <div class="empty-state"><strong>Daten werden geladen …</strong></div>
+</main>
+
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<div id="toast" class="toast" hidden></div>
+<script>
+const DEFAULT_LEIT=[
+  "Was ist hier der Standard – und ist er sichtbar?",
+  "Wo sehe ich Warten, Suchen, Umwege oder Bestand?",
+  "Was hat das Team heute an der Arbeit gehindert?",
+  "Welche Frage habe ich gestellt, statt eine Lösung vorzugeben?",
+  "Was nehme ich mit – und was gebe ich zurück?"
+];
+const DEFAULT_CHECKS=[
+  "Sicherheit: Regale unbeschädigt, Anfahrschutz vorhanden",
+  "Sicherheit: Lastschilder sichtbar, keine Überladung der Regalfächer",
+  "Sicherheit: Paletten und Ladungsträger intakt, Ware sicher gestapelt",
+  "Sicherheit: Verkehrswege markiert, Fußgänger und Stapler getrennt",
+  "Sicherheit: Flucht- und Rettungswege, Notausgänge frei",
+  "Sicherheit: Feuerlöscher zugänglich, Prüfplakette gültig",
+  "Sicherheit: Staplerfahrer mit gültigem Fahrausweis und Unterweisung",
+  "Sicherheit: PSA wird getragen",
+  "5S Sortieren: nur benötigtes Material am Platz, nichts Überflüssiges",
+  "5S Setzen: feste, gekennzeichnete Plätze für Material und Arbeitsmittel",
+  "5S Säubern: Boden, Regale und Arbeitsmittel sauber",
+  "5S Standardisieren: Standard sichtbar, Abweichung sofort erkennbar",
+  "5S Selbstdisziplin: Standard wird eingehalten, 5S-Stand am Board aktuell"
+];
+const CATS=["Sicherheit","Qualität","5S / Ordnung","Fluss / Bestand","Standard","Mensch / Team"];
+
+const S={view:"walk",areas:[],walks:[],findings:[],leit:DEFAULT_LEIT,meta:{},
+  activeWalkId:null,walkRendered:null,afilter:"offen",aarea:"",ready:false,persisted:null};
+const photoURL={};
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+const todayStr=()=>{const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+const fmtDate=iso=>{if(!iso)return"–";const d=new Date(iso);return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear()};
+const fmtTime=iso=>{const d=new Date(iso);return pad(d.getHours())+":"+pad(d.getMinutes())};
+const fmtDue=s=>{if(!s)return"ohne Termin";const[y,m,d]=s.split("-");return d+"."+m+"."+y};
+const daysSince=iso=>Math.floor((Date.now()-new Date(iso).getTime())/86400000);
+const areaName=id=>(S.areas.find(a=>a.id===id)||{}).name||"Bereich gelöscht";
+const myName=()=>S.meta.name||"";
+const uid=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,3500)}
+
+/* ---------- Speicher auf dem Gerät (IndexedDB) ---------- */
+const STORES=["areas","walks","findings","photos","meta"];
+let idb=null;
+function openIDB(){return new Promise((res,rej)=>{const r=indexedDB.open("gemba",1);
+  r.onupgradeneeded=()=>{const d=r.result;for(const s of STORES)if(!d.objectStoreNames.contains(s))d.createObjectStore(s)};
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function idbDo(store,fn){return new Promise((res,rej)=>{const t=idb.transaction(store,"readwrite");fn(t.objectStore(store));
+  t.oncomplete=()=>res();t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})}
+function idbAll(store){return new Promise((res,rej)=>{const out=[];const c=idb.transaction(store).objectStore(store).openCursor();
+  c.onsuccess=()=>{const cur=c.result;if(cur){out.push([cur.key,cur.value]);cur.continue()}else res(out)};c.onerror=()=>rej(c.error)})}
+async function save(store,obj){
+  try{await idbDo(store,os=>os.put(obj,obj.id))}
+  catch(e){toast("Speichern fehlgeschlagen. Ist der Speicher des Handys voll?");throw e}
+}
+async function remove(store,id){await idbDo(store,os=>os.delete(id))}
+async function saveMeta(k,v){S.meta[k]=v;await idbDo("meta",os=>os.put(v,k))}
+function sortAll(){
+  S.areas.sort((a,b)=>(a.name||"").localeCompare(b.name||"",undefined,{numeric:true}));
+  S.walks.sort((a,b)=>(b.startedAt||"").localeCompare(a.startedAt||""));
+  S.findings.sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+}
+async function loadAll(){
+  const [areas,walks,findings,photos,meta]=await Promise.all(STORES.map(idbAll));
+  S.areas=areas.map(x=>x[1]);S.walks=walks.map(x=>x[1]);S.findings=findings.map(x=>x[1]);
+  S.meta=Object.fromEntries(meta);
+  for(const[id,blob]of photos)photoURL[id]=URL.createObjectURL(blob);
+  if(Array.isArray(S.meta.leit)&&S.meta.leit.length)S.leit=S.meta.leit;
+  sortAll();
+}
+async function seedIfNew(){
+  if(S.meta.seeded)return;
+  for(const n of[1,2,3]){const a={id:uid(),name:"Bereich "+n,rhythm:7,checks:DEFAULT_CHECKS.slice(),createdAt:new Date().toISOString()};S.areas.push(a);await save("areas",a)}
+  await saveMeta("leit",DEFAULT_LEIT.slice());await saveMeta("seeded",true);sortAll();
+}
+
+// laufender Rundgang: Eingaben sammeln und kurz verzögert speichern
+let walkTimer=0;
+function saveWalkSoon(w){clearTimeout(walkTimer);walkTimer=setTimeout(()=>save("walks",w).catch(()=>{}),400)}
+async function saveWalkNow(w){clearTimeout(walkTimer);await save("walks",w)}
+
+/* ---------- Kennzahlen ---------- */
+function areaStatus(a){
+  const done=S.walks.filter(w=>w.areaId===a.id&&w.status==="abgeschlossen");
+  const last=done[0];const rhythm=a.rhythm||7;
+  if(!last)return{cls:"due",label:"noch nie begangen",last:null,count:0};
+  const d=daysSince(last.startedAt);const left=rhythm-d;
+  if(left<0)return{cls:"due",label:"überfällig seit "+(-left)+" T",last,count:done.length,d};
+  if(left<=1)return{cls:"soon",label:left===0?"heute fällig":"morgen fällig",last,count:done.length,d};
+  return{cls:"fine",label:"fällig in "+left+" T",last,count:done.length,d};
+}
+function actState(f){
+  if(!f.action)return"none";
+  if(f.action.status==="erledigt")return"done";
+  if(f.action.due&&f.action.due<todayStr())return"late";
+  return"open";
+}
+function walkScore(w){
+  const v=Object.values(w.checks||{});const ok=v.filter(x=>x==="ok").length,nok=v.filter(x=>x==="nok").length;
+  return ok+nok?Math.round(ok/(ok+nok)*100):null;
+}
+
+/* ---------- Rendern ---------- */
+function setTab(v){S.view=v;document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===v)));S.walkRendered=null;render();window.scrollTo(0,0)}
+function updateBadge(){
+  const late=S.findings.filter(f=>actState(f)==="late").length;
+  const b=$("#lateBadge");b.hidden=!late;b.textContent=late;
+  $("#who").textContent=myName()?myName()+" · offline auf diesem Gerät":"Offline auf diesem Gerät";
+}
+function refresh(){
+  updateBadge();
+  if(S.view==="walk"&&S.activeWalkId&&S.walkRendered===S.activeWalkId){
+    const fs=S.findings.filter(f=>f.walkId===S.activeWalkId);
+    $("#walkFindings").innerHTML=findingsHTML(fs,false);$("#walkFindCount").textContent=fs.length;return;
+  }
+  render();
+}
+function render(){
+  updateBadge();
+  const app=$("#app");
+  if(!S.ready){app.innerHTML=S.failed?`<div class="empty-state"><strong>Speicher nicht verfügbar</strong><span>Der Browser erlaubt dieser Seite keinen Speicher. Öffne die App in Chrome, nicht im privaten Modus.</span></div>`:`<div class="empty-state">Wird geladen …</div>`;return}
+  if(S.view==="walk")app.innerHTML=S.activeWalkId?walkActiveHTML():walkStartHTML();
+  if(S.view==="actions")app.innerHTML=actionsHTML();
+  if(S.view==="stats")app.innerHTML=statsHTML();
+  if(S.view==="setup")app.innerHTML=setupHTML();
+  if(S.view==="walk"&&S.activeWalkId)S.walkRendered=S.activeWalkId;
+}
+function backupBanner(){
+  if(!S.walks.some(w=>w.status==="abgeschlossen"))return"";
+  const lb=S.meta.lastBackup;const d=lb?daysSince(lb):null;
+  if(d!==null&&d<14)return"";
+  return`<div class="banner row" style="justify-content:space-between"><span>${lb?"Letzte Sicherung vor "+d+" Tagen.":"Noch keine Sicherung erstellt."} Die Daten liegen nur auf diesem Handy.</span><button class="btn small" data-act="backup">Jetzt sichern</button></div>`;
+}
+
+function walkStartHTML(){
+  const o={due:0,soon:1,fine:2};
+  const areas=S.areas.slice().sort((a,b)=>o[areaStatus(a).cls]-o[areaStatus(b).cls]||a.name.localeCompare(b.name,undefined,{numeric:true}));
+  const dueCount=areas.filter(a=>areaStatus(a).cls==="due").length;
+  const cards=!areas.length?`<div class="empty-state"><strong>Noch keine Bereiche angelegt</strong><span>Lege unter „Bereiche“ fest, wo du regelmäßig hingehst, mit Rhythmus und Checkliste.</span><button class="btn primary" data-act="newArea">Ersten Bereich anlegen</button></div>`
+  :`<div class="areas">${areas.map(a=>{const st=areaStatus(a);return`<div class="area ${st.cls}">
+      <div class="stack" style="gap:6px"><span class="name">${esc(a.name)}</span>
+      <div class="row"><span class="pill ${st.cls==="due"?"bad":st.cls==="soon"?"warn":"ok"}">${st.label}</span><span class="muted mono" style="font-size:12px">alle ${a.rhythm||7} Tage · ${(a.checks||[]).length} Prüfpunkte</span></div>
+      <span class="muted" style="font-size:13px">${st.last?"Zuletzt am "+fmtDate(st.last.startedAt):"Noch kein Rundgang"}</span></div>
+      <button class="btn ${st.cls==="due"?"primary":""}" data-act="startWalk" data-id="${a.id}">Rundgang starten</button>
+    </div>`}).join("")}</div>`;
+  const recent=S.walks.filter(w=>w.status==="abgeschlossen").slice(0,10);
+  return`${backupBanner()}<section class="stack">
+    <div class="spread"><div><div class="eyebrow">${new Date().toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</div><h1>Wohin gehst du heute?</h1></div>
+    ${S.areas.length?`<span class="muted">${dueCount?dueCount+" Bereich"+(dueCount>1?"e":"")+" fällig":"Alle Bereiche im Rhythmus"}</span>`:""}</div>
+    ${cards}
+  </section>
+  <section class="panel stack"><h2>Letzte Rundgänge</h2>
+    ${recent.length?`<div class="list-walks">${recent.map(w=>{const sc=walkScore(w);const nf=S.findings.filter(f=>f.walkId===w.id).length;return`<button data-act="showWalk" data-id="${w.id}"><span><strong>${esc(areaName(w.areaId))}</strong><br><span class="muted" style="font-size:13px">${fmtDate(w.startedAt)} · ${fmtTime(w.startedAt)} Uhr</span></span><span class="row" style="gap:6px">${sc!==null?`<span class="pill ${sc>=90?"ok":sc>=70?"warn":"bad"}">${sc} %</span>`:""}<span class="pill">${nf} Befund${nf===1?"":"e"}</span></span></button>`}).join("")}</div>`
+    :`<p class="muted" style="margin:0">Abgeschlossene Rundgänge erscheinen hier. Antippen öffnet Details und den Excel-Export.</p>`}
+  </section>`;
+}
+
+function walkActiveHTML(){
+  const w=S.walks.find(x=>x.id===S.activeWalkId);
+  if(!w){S.activeWalkId=null;return walkStartHTML()}
+  const qs=w.questions||S.leit,cl=w.checklist||[];
+  const fs=S.findings.filter(f=>f.walkId===w.id);
+  return`<div class="walkhead"><div><div class="eyebrow">Laufender Rundgang · seit ${fmtTime(w.startedAt)} Uhr</div><h1 style="color:inherit">${esc(areaName(w.areaId))}</h1></div>
+    <button class="btn primary big" data-act="addFinding">+ Befund erfassen</button></div>
+  <div class="grid2">
+    <section class="panel stack"><div><h2>Leitfragen</h2><p class="muted" style="margin:4px 0 0">Erst beobachten, dann fragen. Stichworte reichen.</p></div>
+      ${qs.map((q,i)=>`<div class="q"><label for="q${i}">${esc(q)}</label><textarea id="q${i}" data-q="q${i}" placeholder="Beobachtung …">${esc((w.answers||{})["q"+i]||"")}</textarea></div>`).join("")}
+    </section>
+    <div class="stack" style="gap:16px">
+      <section class="panel"><div class="spread" style="margin-bottom:6px"><h2>Checkliste</h2><span class="muted mono" id="clScore">${scoreText(w)}</span></div>
+        ${cl.length?cl.map((c,i)=>`<div class="check"><span>${esc(c)}</span><div class="seg" role="group" aria-label="${esc(c)}">${[["ok","OK"],["nok","Abw."],["na","n. a."]].map(([v,t])=>`<button data-act="check" data-c="c${i}" data-v="${v}" aria-pressed="${(w.checks||{})["c"+i]===v}">${t}</button>`).join("")}</div></div>`).join("")
+        :`<p class="muted" style="margin:0">Für diesen Bereich gibt es keine Prüfpunkte. Du kannst sie unter „Bereiche“ ergänzen.</p>`}
+      </section>
+      <section class="panel stack"><div class="spread"><h2>Befunde <span class="mono muted" id="walkFindCount">${fs.length}</span></h2><button class="btn small" data-act="addFinding">+ Befund</button></div>
+        <div id="walkFindings" class="stack">${findingsHTML(fs,false)}</div>
+      </section>
+    </div>
+  </div>
+  <div class="row" style="justify-content:space-between"><button class="btn danger" data-act="discardWalk">Rundgang verwerfen</button><button class="btn dark big" data-act="endWalk">Rundgang abschließen</button></div>`;
+}
+function scoreText(w){const sc=walkScore(w);return sc!==null?sc+" % erfüllt":""}
+
+function thumbHTML(f){
+  if(!f.photo)return`<span class="thumb empty">kein Foto</span>`;
+  const u=photoURL[f.photo];if(!u)return`<span class="thumb empty">Foto fehlt</span>`;
+  return`<button class="thumb" data-act="photo" data-id="${esc(f.photo)}" aria-label="Foto vergrößern"><img class="thumb" src="${u}" alt="Foto zum Befund"></button>`;
+}
+function findingsHTML(fs,showContext){
+  if(!fs.length)return`<p class="muted" style="margin:0">${showContext?"Keine Einträge für diesen Filter.":"Noch keine Befunde. Abweichung gesehen? Kurz notieren, Foto dazu, Maßnahme festlegen."}</p>`;
+  return fs.map(f=>{const st=actState(f);const cls=st==="late"?"st-late":st==="open"?"st-open":st==="done"?"st-done":"";
+    const a=f.action;
+    return`<article class="finding ${cls}">${thumbHTML(f)}
+      <div class="body">
+        <div class="row" style="gap:6px"><span class="pill">${esc(f.cat||"Sonstiges")}</span>${showContext?`<span class="muted" style="font-size:13px">${esc(areaName(f.areaId))} · ${fmtDate(f.createdAt)}</span>`:""}</div>
+        <p>${esc(f.text)}</p>
+        ${a?`<div class="action"><span class="what">→ ${esc(a.what||"Maßnahme")}</span>
+          <span class="row" style="gap:6px;font-size:13px"><span class="muted">${esc(a.who||"ohne Verantwortlichen")} · bis ${fmtDue(a.due)}</span>
+          <span class="pill ${st==="late"?"bad":st==="done"?"ok":"warn"}">${st==="late"?"überfällig":st==="done"?"erledigt "+fmtDate(a.doneAt):"offen"}</span></span></div>`:""}
+        <div class="row" style="gap:8px">
+          ${a&&st!=="done"?`<button class="btn small" data-act="done" data-id="${f.id}">Erledigt</button>`:""}
+          ${a&&st==="done"?`<button class="btn small" data-act="reopen" data-id="${f.id}">Wieder öffnen</button>`:""}
+          <button class="btn small" data-act="editFinding" data-id="${f.id}">${a?"Bearbeiten":"Maßnahme ergänzen"}</button></div>
+      </div></article>`}).join("");
+}
+
+function actionsHTML(){
+  const all=S.findings;
+  const counts={offen:0,late:0,erledigt:0,ohne:0};
+  all.forEach(f=>{const s=actState(f);if(s==="open")counts.offen++;if(s==="late"){counts.late++;counts.offen++}if(s==="done")counts.erledigt++;if(s==="none")counts.ohne++});
+  const filters=[["offen","Offen",counts.offen],["late","Überfällig",counts.late],["erledigt","Erledigt",counts.erledigt],["ohne","Befunde ohne Maßnahme",counts.ohne],["alle","Alle",all.length]];
+  let list=all.filter(f=>{const s=actState(f);
+    if(S.afilter==="offen")return s==="open"||s==="late";if(S.afilter==="late")return s==="late";
+    if(S.afilter==="erledigt")return s==="done";if(S.afilter==="ohne")return s==="none";return true});
+  if(S.aarea)list=list.filter(f=>f.areaId===S.aarea);
+  if(S.afilter==="offen"||S.afilter==="late")list.sort((a,b)=>(a.action.due||"9999").localeCompare(b.action.due||"9999"));
+  return`<section class="stack">
+    <div class="spread"><div><div class="eyebrow">Aus den Rundgängen</div><h1>Maßnahmen</h1></div>
+    <div style="min-width:200px"><label class="eyebrow" for="aarea">Bereich</label><select id="aarea"><option value="">Alle Bereiche</option>${S.areas.map(a=>`<option value="${a.id}" ${S.aarea===a.id?"selected":""}>${esc(a.name)}</option>`).join("")}</select></div></div>
+    <div class="chips">${filters.map(([k,t,n])=>`<button class="chip" data-act="afilter" data-v="${k}" aria-pressed="${S.afilter===k}">${t} <span class="mono">${n}</span></button>`).join("")}</div>
+    ${all.length?`<div class="grid2">${findingsHTML(list,true)}</div>`:`<div class="empty-state"><strong>Noch keine Befunde</strong><span>Befunde und Maßnahmen entstehen während eines Rundgangs und landen hier zur Nachverfolgung.</span></div>`}
+  </section>`;
+}
+
+function statsHTML(){
+  const done=S.walks.filter(w=>w.status==="abgeschlossen");
+  const last30=done.filter(w=>daysSince(w.startedAt)<30).length;
+  const open=S.findings.filter(f=>["open","late"].includes(actState(f))).length;
+  const late=S.findings.filter(f=>actState(f)==="late").length;
+  const scores=done.slice(0,20).map(walkScore).filter(x=>x!==null);
+  const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):null;
+  const leadDays=S.findings.filter(f=>actState(f)==="done").map(f=>(new Date(f.action.doneAt)-new Date(f.createdAt))/86400000).filter(x=>x>=0);
+  const lead=leadDays.length?Math.round(leadDays.reduce((a,b)=>a+b,0)/leadDays.length):null;
+
+  const mon=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-((x.getDay()+6)%7));return x};
+  const kw=d=>{const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const day=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-day);const y=new Date(Date.UTC(t.getUTCFullYear(),0,1));return Math.ceil(((t-y)/86400000+1)/7)};
+  const m0=mon(new Date());const weeks=[];
+  for(let i=7;i>=0;i--){const s=new Date(m0);s.setDate(s.getDate()-7*i);const e=new Date(s);e.setDate(e.getDate()+7);
+    weeks.push({label:"KW "+kw(s),n:done.filter(w=>{const t=new Date(w.startedAt);return t>=s&&t<e}).length,now:i===0})}
+  const maxN=Math.max(4,...weeks.map(w=>w.n));const W=640,H=200,top=22,bot=28,left=10,bw=(W-left*2)/8;
+  const y=v=>top+(H-top-bot)*(1-v/maxN);const step=maxN<=6?2:Math.ceil(maxN/3);
+  let grid="";for(let v=0;v<=maxN;v+=step)grid+=`<line class="grid" x1="${left}" x2="${W-left}" y1="${y(v)}" y2="${y(v)}"/>`;
+  const bars=weeks.map((w,i)=>{const x=left+i*bw+bw*0.18,wd=bw*0.64;return`<rect class="bar${w.now?" now":""}" x="${x}" y="${y(w.n)}" width="${wd}" height="${Math.max(0,H-bot-y(w.n))}" rx="2"/>
+    <text class="val" x="${x+wd/2}" y="${y(w.n)-6}" text-anchor="middle">${w.n}</text><text class="lbl" x="${x+wd/2}" y="${H-8}" text-anchor="middle">${w.label}</text>`}).join("");
+
+  const byCat={};S.findings.forEach(f=>{byCat[f.cat||"Sonstiges"]=(byCat[f.cat||"Sonstiges"]||0)+1});
+  const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);const maxC=Math.max(1,...cats.map(c=>c[1]));
+  const rep={};done.forEach(w=>{(w.checklist||[]).forEach((c,i)=>{if((w.checks||{})["c"+i]==="nok"){const k=w.areaId+"|"+c;rep[k]=(rep[k]||0)+1}})});
+  const reps=Object.entries(rep).filter(r=>r[1]>=2).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const rows=S.areas.map(a=>{const st=areaStatus(a);const ws=done.filter(w=>w.areaId===a.id);const sc=ws.slice(0,5).map(walkScore).filter(x=>x!==null);
+    const o=S.findings.filter(f=>f.areaId===a.id&&["open","late"].includes(actState(f))).length;const l=S.findings.filter(f=>f.areaId===a.id&&actState(f)==="late").length;
+    return`<tr><td><strong>${esc(a.name)}</strong></td><td><span class="pill ${st.cls==="due"?"bad":st.cls==="soon"?"warn":"ok"}">${st.label}</span></td><td class="num">${st.last?fmtDate(st.last.startedAt):"–"}</td><td class="num">${ws.length}</td><td class="num">${sc.length?Math.round(sc.reduce((x,y)=>x+y,0)/sc.length)+" %":"–"}</td><td class="num">${o}${l?` <span class="pill bad">${l} überf.</span>`:""}</td></tr>`}).join("");
+
+  return`<section class="stack"><div><div class="eyebrow">Stand ${fmtDate(new Date().toISOString())}</div><h1>Auswertung</h1></div>
+    <div class="kpis">
+      <div class="kpi"><span class="eyebrow">Rundgänge 30 Tage</span><span class="v">${last30}</span></div>
+      <div class="kpi"><span class="eyebrow">Checkliste erfüllt</span><span class="v">${avg!==null?avg+"<small style='font-size:20px'> %</small>":"–"}</span><span class="muted" style="font-size:12px">Ø letzte 20 Rundgänge</span></div>
+      <div class="kpi"><span class="eyebrow">Offene Maßnahmen</span><span class="v">${open}</span></div>
+      <div class="kpi ${late?"alert":""}"><span class="eyebrow">Überfällig</span><span class="v">${late}</span></div>
+      <div class="kpi"><span class="eyebrow">Ø Erledigungszeit</span><span class="v">${lead!==null?lead+"<small style='font-size:20px'> T</small>":"–"}</span></div>
+    </div></section>
+  <div class="grid2">
+    <section class="panel stack"><div class="spread"><h2>Rundgänge je Woche</h2><span class="muted" style="font-size:13px">aktuelle Woche in Gelb</span></div>
+      <div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Abgeschlossene Rundgänge der letzten acht Kalenderwochen">${grid}${bars}</svg></div></section>
+    <section class="panel stack"><h2>Befunde nach Thema</h2>
+      ${cats.length?cats.map(([c,n])=>`<div class="hbar"><span>${esc(c)}</span><div class="track"><div class="fill" style="width:${n/maxC*100}%"></div></div><span class="mono" style="text-align:right">${n}</span></div>`).join(""):`<p class="muted" style="margin:0">Sobald Befunde erfasst sind, siehst du hier, wo die Themen liegen.</p>`}
+    </section>
+  </div>
+  <section class="panel stack"><h2>Bereiche im Überblick</h2>
+    ${S.areas.length?`<div class="tablewrap"><table><thead><tr><th>Bereich</th><th>Rhythmus</th><th class="num">Letzter Rundgang</th><th class="num">Rundgänge</th><th class="num">Erfüllt (Ø 5)</th><th class="num">Offene Maßn.</th></tr></thead><tbody>${rows}</tbody></table></div>`:`<p class="muted" style="margin:0">Noch keine Bereiche.</p>`}
+  </section>
+  <section class="panel stack"><div><h2>Wiederkehrende Abweichungen</h2><p class="muted" style="margin:4px 0 0">Prüfpunkte, die in mindestens zwei Rundgängen als Abweichung markiert wurden. Hier lohnt die Frage nach der Ursache.</p></div>
+    ${reps.length?`<div class="tablewrap"><table><thead><tr><th>Prüfpunkt</th><th>Bereich</th><th class="num">Abweichungen</th></tr></thead><tbody>${reps.map(([k,n])=>{const[aid,...c]=k.split("|");return`<tr><td>${esc(c.join("|"))}</td><td>${esc(areaName(aid))}</td><td class="num">${n}×</td></tr>`}).join("")}</tbody></table></div>`:`<p class="muted" style="margin:0">Bisher keine Wiederholungen.</p>`}
+  </section>`;
+}
+
+function setupHTML(){
+  const lb=S.meta.lastBackup;
+  return`<section class="stack"><div class="spread"><div><div class="eyebrow">Einrichtung</div><h1>Bereiche & Leitfragen</h1></div><button class="btn primary" data-act="newArea">+ Bereich anlegen</button></div>
+    ${S.areas.length?`<div class="areas">${S.areas.map(a=>`<div class="area"><div class="stack" style="gap:6px"><span class="name">${esc(a.name)}</span>
+      <span class="muted mono" style="font-size:12px">Rhythmus: alle ${a.rhythm||7} Tage · ${(a.checks||[]).length} Prüfpunkte</span></div>
+      <button class="btn small" data-act="editArea" data-id="${a.id}">Bearbeiten</button></div>`).join("")}</div>`
+    :`<div class="empty-state"><strong>Noch keine Bereiche</strong><span>Ein Bereich ist ein Ort, den du regelmäßig besuchst, zum Beispiel Wareneingang oder Linie 3.</span></div>`}
+  </section>
+  <section class="panel stack"><div class="spread"><div><h2>Leitfragen</h2><p class="muted" style="margin:4px 0 0">Gelten für jeden Rundgang. Änderungen wirken ab dem nächsten Start.</p></div><button class="btn small" data-act="editLeit">Bearbeiten</button></div>
+    <ol style="margin:0;padding-left:22px">${S.leit.map(q=>`<li>${esc(q)}</li>`).join("")}</ol></section>
+  <section class="panel stack"><div><h2>Daten & Sicherung</h2><p class="muted" style="margin:4px 0 0">Alle Rundgänge, Befunde und Fotos liegen nur auf diesem Gerät. Eine Sicherung ist eine Datei, die du in Google Drive oder per Mail ablegen und auf einem neuen Handy wieder einspielen kannst.</p></div>
+    <label class="field"><span>Dein Name (erscheint im Excel-Export)</span><input type="text" id="fMyName" value="${esc(myName())}" placeholder="z. B. Alfred Endörfer"></label>
+    <div class="row"><span class="pill ${lb&&daysSince(lb)<14?"ok":"warn"}">${lb?"Letzte Sicherung "+fmtDate(lb):"Noch keine Sicherung"}</span>
+      <span class="pill ${S.persisted?"ok":""}">${S.persisted?"Speicher dauerhaft geschützt":"Speicher nicht dauerhaft geschützt"}</span>
+      <span class="muted mono" style="font-size:12px" id="usage"></span></div>
+    <div class="row"><button class="btn dark" data-act="backup">Sicherung erstellen</button><label class="btn" for="fRestore">Sicherung einspielen</label><input type="file" id="fRestore" accept=".json,application/json" class="vh"></div>
+  </section>`;
+}
+
+/* ---------- Dialoge ---------- */
+const dlg=$("#dlg");
+function openDlg(html){$("#dlgBody").innerHTML=html;if(!dlg.open)dlg.showModal()}
+function closeDlg(){if(dlg.open)dlg.close()}
+
+function areaDlg(a){
+  openDlg(`<h2>${a?"Bereich bearbeiten":"Neuer Bereich"}</h2>
+    <label class="field"><span>Name</span><input type="text" id="fName" value="${esc(a?.name||"")}" placeholder="z. B. Kommissionierung Halle 2"></label>
+    <label class="field"><span>Rhythmus in Tagen</span><input type="number" id="fRhythm" min="1" max="90" value="${a?.rhythm||7}"></label>
+    <label class="field"><span>Prüfpunkte, einer pro Zeile</span><textarea id="fChecks" rows="10">${esc((a?a.checks:DEFAULT_CHECKS).join("\n"))}</textarea></label>
+    <div class="foot">${a?`<button class="btn danger" data-act="delArea" data-id="${a.id}" style="margin-right:auto">Löschen</button>`:""}<button class="btn" data-act="close">Abbrechen</button><button class="btn primary" data-act="saveArea" data-id="${a?.id||""}">Speichern</button></div>`);
+}
+function leitDlg(){
+  openDlg(`<h2>Leitfragen</h2><label class="field"><span>Eine Frage pro Zeile</span><textarea id="fLeit" rows="8">${esc(S.leit.join("\n"))}</textarea></label>
+    <div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn primary" data-act="saveLeit">Speichern</button></div>`);
+}
+function findingDlg(f){
+  const a=f?.action;
+  openDlg(`<h2>${f?"Befund bearbeiten":"Befund erfassen"}</h2>
+    <label class="field"><span>Was hast du gesehen?</span><textarea id="fText" rows="3" placeholder="Beobachtung, möglichst konkret">${esc(f?.text||"")}</textarea></label>
+    <div class="field"><span>Thema</span><div class="chips" id="fCat">${CATS.map(c=>`<button type="button" class="chip" data-act="pickCat" data-v="${esc(c)}" aria-pressed="${(f?.cat||"")===c}">${esc(c)}</button>`).join("")}</div></div>
+    ${f?"":`<div class="field"><span>Foto (optional)</span>
+      <label class="btn photo-pick" for="fPhoto">Foto aufnehmen oder auswählen</label>
+      <input type="file" id="fPhoto" accept="image/*" class="vh">
+      <div id="fPrev" class="row" hidden><img id="fPrevImg" class="thumb" alt="Ausgewähltes Foto"><span class="muted" style="font-size:13px">Foto übernommen</span><button type="button" class="link" data-act="clearPhoto">entfernen</button></div></div>`}
+    <label class="row" style="gap:8px"><input type="checkbox" id="fHasAct" ${a?"checked":""} style="width:20px;height:20px"> <strong>Maßnahme festlegen</strong></label>
+    <div id="fAct" class="stack" ${a?"":"hidden"}>
+      <label class="field"><span>Maßnahme</span><input type="text" id="fWhat" value="${esc(a?.what||"")}" placeholder="Was wird getan?"></label>
+      <div class="grid2" style="gap:10px"><label class="field"><span>Verantwortlich</span><input type="text" id="fWho" value="${esc(a?.who||"")}" placeholder="Name oder Rolle"></label>
+      <label class="field"><span>Bis</span><input type="date" id="fDue" value="${esc(a?.due||"")}"></label></div>
+    </div>
+    <div class="foot">${f?`<button class="btn danger" data-act="delFinding" data-id="${f.id}" style="margin-right:auto">Löschen</button>`:""}<button class="btn" data-act="close">Abbrechen</button><button class="btn primary" data-act="saveFinding" data-id="${f?.id||""}">Speichern</button></div>`);
+  $("#fHasAct").addEventListener("change",e=>{$("#fAct").hidden=!e.target.checked;if(e.target.checked)$("#fWhat").focus()});
+  const fp=$("#fPhoto");if(fp)fp.addEventListener("change",()=>{const file=fp.files&&fp.files[0];const pv=$("#fPrev");
+    if(!file){pv.hidden=true;return}
+    try{$("#fPrevImg").src=URL.createObjectURL(file)}catch(_){}pv.hidden=false;$(".photo-pick").textContent="Anderes Foto wählen"});
+}
+function walkDlg(w){
+  const fs=S.findings.filter(f=>f.walkId===w.id);const qs=w.questions||[];const cl=w.checklist||[];const sc=walkScore(w);
+  const lbl={ok:"OK",nok:"Abweichung",na:"n. a."};
+  openDlg(`<div><div class="eyebrow">${fmtDate(w.startedAt)} · ${fmtTime(w.startedAt)}–${w.endedAt?fmtTime(w.endedAt):"?"} Uhr</div><h2>${esc(areaName(w.areaId))}</h2></div>
+    ${exportButtons(w.id)}
+    ${qs.some((q,i)=>(w.answers||{})["q"+i])?`<div class="stack" style="gap:8px">${qs.map((q,i)=>(w.answers||{})["q"+i]?`<div><strong style="font-size:14px">${esc(q)}</strong><p style="margin:2px 0 0;white-space:pre-wrap">${esc(w.answers["q"+i])}</p></div>`:"").join("")}</div>`:`<p class="muted" style="margin:0">Keine Notizen zu den Leitfragen.</p>`}
+    ${cl.length?`<div><div class="spread"><h3>Checkliste</h3>${sc!==null?`<span class="pill ${sc>=90?"ok":sc>=70?"warn":"bad"}">${sc} % erfüllt</span>`:""}</div>${cl.map((c,i)=>{const v=(w.checks||{})["c"+i];return`<div class="spread" style="border-top:1px solid var(--line);padding:6px 0"><span>${esc(c)}</span><span class="pill ${v==="ok"?"ok":v==="nok"?"bad":""}">${v?lbl[v]:"nicht geprüft"}</span></div>`}).join("")}</div>`:""}
+    <div class="stack"><h3>Befunde (${fs.length})</h3>${findingsHTML(fs,false)}</div>
+    <div class="foot"><button class="btn danger" data-act="delWalk" data-id="${w.id}" style="margin-right:auto">Löschen</button><button class="btn" data-act="close">Schließen</button></div>`);
+}
+const canShareFiles=()=>{try{return!!(navigator.canShare&&navigator.canShare({files:[new File(["x"],"t.xlsx",{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})]}))}catch(e){return false}};
+function exportButtons(wid){
+  return`<div class="row"><button class="btn primary" data-act="exportWalk" data-id="${wid}" data-mode="download">Excel herunterladen</button>${canShareFiles()?`<button class="btn" data-act="exportWalk" data-id="${wid}" data-mode="share">Excel teilen (Mail, Drive …)</button>`:""}</div>`;
+}
+function confirmDlg(title,text,act,id,label){
+  openDlg(`<h2>${esc(title)}</h2><p style="margin:0">${esc(text)}</p><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn danger" data-act="${act}" data-id="${id||""}" data-confirmed="1">${esc(label)}</button></div>`);
+}
+
+/* ---------- Dateien ---------- */
+async function shrink(file){
+  try{const bmp=await createImageBitmap(file);const sc=Math.min(1,1600/Math.max(bmp.width,bmp.height));
+    const c=document.createElement("canvas");c.width=Math.round(bmp.width*sc);c.height=Math.round(bmp.height*sc);
+    c.getContext("2d").drawImage(bmp,0,0,c.width,c.height);
+    return await new Promise(r=>c.toBlob(b=>r(b||file),"image/jpeg",0.82));
+  }catch(e){return file}
+}
+async function getPhoto(id){return new Promise((res,rej)=>{const r=idb.transaction("photos").objectStore("photos").get(id);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error)})}
+function downloadBlob(blob,name){
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
+}
+async function shareBlob(blob,name){
+  const file=new File([blob],name,{type:blob.type});
+  try{await navigator.share({files:[file],title:name});return true}catch(e){if(e&&e.name==="AbortError")return true;return false}
+}
+const blobToDataURL=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)});
+const dateStamp=iso=>{const d=iso?new Date(iso):new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+
+/* ---------- Excel-Export ---------- */
+let xlsxLoading=null;
+function loadXLSX(){
+  if(window.ExcelJS)return Promise.resolve();
+  return xlsxLoading||(xlsxLoading=new Promise((res,rej)=>{const s=document.createElement("script");
+    s.src="vendor/exceljs.min.js";s.onload=()=>res();s.onerror=()=>{xlsxLoading=null;rej(new Error("load"))};document.head.appendChild(s)}));
+}
+async function buildWorkbook(w){
+  const E=window.ExcelJS,area=areaName(w.areaId),sc=walkScore(w);
+  const lbl={ok:"OK",nok:"Abweichung",na:"n. a."};
+  const qs=w.questions||[],cl=w.checklist||[],fs=S.findings.filter(f=>f.walkId===w.id).slice().sort((a,b)=>(a.createdAt||"").localeCompare(b.createdAt||""));
+  const nOk=Object.values(w.checks||{}).filter(v=>v==="ok").length,nNok=Object.values(w.checks||{}).filter(v=>v==="nok").length;
+  const styleHead=row=>row.eachCell(c=>{c.font={bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF18212B"}};c.alignment={vertical:"middle"}});
+  const wrap={wrapText:true,vertical:"top"};
+  const wb=new E.Workbook();wb.creator=myName()||"Gemba-Rundgang";wb.created=new Date();
+
+  const s1=wb.addWorksheet("Rundgang");s1.columns=[{width:42},{width:80}];
+  s1.addRow(["Gemba-Rundgang"]).font={bold:true,size:16};s1.addRow([]);
+  [["Bereich",area],["Datum",fmtDate(w.startedAt)],["Beginn",fmtTime(w.startedAt)+" Uhr"],["Ende",w.endedAt?fmtTime(w.endedAt)+" Uhr":"–"],
+   ["Durchgeführt von",myName()||"–"],["Checkliste erfüllt",sc!==null?sc/100:"–"],["Prüfpunkte OK / Abweichung",nOk+" / "+nNok],["Befunde",fs.length]]
+   .forEach(r=>{const row=s1.addRow(r);row.getCell(1).font={bold:true};row.getCell(2).alignment={horizontal:"left"}});
+  if(sc!==null)s1.getCell("B8").numFmt="0%";
+  s1.addRow([]);styleHead(s1.addRow(["Leitfrage","Notiz"]));
+  qs.forEach((q,i)=>{const row=s1.addRow([q,(w.answers||{})["q"+i]||""]);row.eachCell(c=>c.alignment=wrap)});
+
+  const s2=wb.addWorksheet("Checkliste");s2.columns=[{width:5},{width:22},{width:62},{width:14}];
+  styleHead(s2.addRow(["Nr.","Kategorie","Prüfpunkt","Ergebnis"]));
+  cl.forEach((c,i)=>{const m=c.match(/^(Sicherheit|5S)[^:]*:\s*/);const v=(w.checks||{})["c"+i];
+    const row=s2.addRow([i+1,m?(m[1]==="5S"?c.split(":")[0]:"Sicherheit"):"",m?c.slice(m[0].length):c,v?lbl[v]:"nicht geprüft"]);
+    row.getCell(3).alignment=wrap;
+    if(v==="nok")row.getCell(4).font={bold:true,color:{argb:"FFB8321F"}};if(v==="ok")row.getCell(4).font={color:{argb:"FF24734A"}}});
+  if(cl.length)s2.autoFilter="A1:D"+(cl.length+1);
+
+  const s3=wb.addWorksheet("Befunde");
+  s3.columns=[{width:5},{width:16},{width:44},{width:34},{width:36},{width:18},{width:12},{width:14},{width:12}];
+  styleHead(s3.addRow(["Nr.","Thema","Befund","Foto","Maßnahme","Verantwortlich","Termin","Status","Erledigt am"]));
+  const BOX_W=230,BOX_H=170;
+  for(let i=0;i<fs.length;i++){const f=fs[i];const a=f.action;const st=actState(f);
+    let p=null;
+    if(f.photo){const blob=await getPhoto(f.photo);
+      if(blob&&/jpeg|png|gif/.test(blob.type||"image/jpeg")){let iw=4,ih=3;try{const bmp=await createImageBitmap(blob);iw=bmp.width;ih=bmp.height}catch(_){}
+        p={dataUrl:await blobToDataURL(blob),ext:(blob.type||"").includes("png")?"png":(blob.type||"").includes("gif")?"gif":"jpeg",w:iw,h:ih}}}
+    const row=s3.addRow([i+1,f.cat||"",f.text||"",f.photo&&!p?"Foto fehlt":"",a?a.what||"":"",a?a.who||"":"",a&&a.due?fmtDue(a.due):"",a?(st==="late"?"überfällig":st==="done"?"erledigt":"offen"):"keine Maßnahme",a&&a.doneAt?fmtDate(a.doneAt):""]);
+    row.eachCell(c=>c.alignment=wrap);
+    if(p){const k=Math.min(BOX_W/p.w,BOX_H/p.h);const iw=Math.round(p.w*k),ih=Math.round(p.h*k);
+      row.height=Math.max(40,ih*0.75+10);
+      const img=wb.addImage({base64:p.dataUrl,extension:p.ext});
+      s3.addImage(img,{tl:{col:3.05,row:row.number-1+0.05},ext:{width:iw,height:ih},editAs:"oneCell"})}
+    if(st==="late")row.getCell(8).font={bold:true,color:{argb:"FFB8321F"}}}
+  if(fs.length)s3.autoFilter="A1:I"+(fs.length+1);
+  s2.views=[{state:"frozen",ySplit:1}];s3.views=[{state:"frozen",ySplit:1}];
+  const buf=await wb.xlsx.writeBuffer();
+  return new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+async function exportWalk(wid,mode){
+  const w=S.walks.find(x=>x.id===wid);if(!w)return toast("Rundgang nicht gefunden.");
+  try{await loadXLSX()}catch(e){return toast("Excel-Baustein fehlt. App einmal mit Netz öffnen, dann klappt es auch offline.")}
+  const blob=await buildWorkbook(w);
+  const name=("Gemba_"+areaName(w.areaId)+"_"+dateStamp(w.startedAt)).replace(/[\\/:*?"<>|]+/g,"-").replace(/\s+/g,"_")+".xlsx";
+  if(mode==="share"&&await shareBlob(blob,name))return;
+  downloadBlob(blob,name);toast("Excel-Datei liegt im Download-Ordner");
+}
+
+/* ---------- Sicherung ---------- */
+async function makeBackup(){
+  const photos={};
+  for(const f of S.findings)if(f.photo&&!photos[f.photo]){const b=await getPhoto(f.photo);if(b)photos[f.photo]=await blobToDataURL(b)}
+  const data={app:"gemba-rundgang",version:1,exportedAt:new Date().toISOString(),meta:{name:S.meta.name||"",leit:S.leit},areas:S.areas,walks:S.walks,findings:S.findings,photos};
+  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+  const name="Gemba-Sicherung_"+dateStamp()+".json";
+  if(canShareFiles()){if(await shareBlob(blob,name)){await saveMeta("lastBackup",new Date().toISOString());render();return}}
+  downloadBlob(blob,name);await saveMeta("lastBackup",new Date().toISOString());toast("Sicherung liegt im Download-Ordner");render();
+}
+let pendingRestore=null;
+async function readRestore(file){
+  try{const data=JSON.parse(await file.text());
+    if(data.app!=="gemba-rundgang"||!Array.isArray(data.walks))throw new Error("format");
+    pendingRestore=data;
+    confirmDlg("Sicherung einspielen?",`Sicherung vom ${fmtDate(data.exportedAt)} mit ${data.walks.length} Rundgängen und ${data.findings.length} Befunden. Alle Daten auf diesem Gerät werden dadurch ersetzt.`,"restore","","Ersetzen und einspielen");
+  }catch(e){toast("Diese Datei ist keine Gemba-Sicherung.")}
+}
+async function applyRestore(){
+  const d=pendingRestore;pendingRestore=null;if(!d)return;
+  for(const s of["areas","walks","findings","photos"])await idbDo(s,os=>os.clear());
+  for(const a of d.areas)await save("areas",a);for(const w of d.walks)await save("walks",w);for(const f of d.findings)await save("findings",f);
+  for(const[id,url]of Object.entries(d.photos||{})){const blob=await (await fetch(url)).blob();await idbDo("photos",os=>os.put(blob,id))}
+  await saveMeta("name",d.meta?.name||"");if(d.meta?.leit?.length)await saveMeta("leit",d.meta.leit);await saveMeta("seeded",true);
+  for(const u of Object.values(photoURL))URL.revokeObjectURL(u);for(const k in photoURL)delete photoURL[k];
+  S.activeWalkId=null;await loadAll();toast("Sicherung eingespielt");setTab("walk");
+}
+
+/* ---------- Aktionen ---------- */
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-tab],[data-act]");if(!t)return;
+  if(t.dataset.tab)return setTab(t.dataset.tab);
+  const act=t.dataset.act,id=t.dataset.id;
+  try{
+    if(act==="close")return closeDlg();
+    if(act==="afilter"){S.afilter=t.dataset.v;return render()}
+    if(act==="pickCat"){t.parentElement.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",String(c===t)));return}
+    if(act==="clearPhoto"){const fp=$("#fPhoto");if(fp)fp.value="";$("#fPrev").hidden=true;$(".photo-pick").textContent="Foto aufnehmen oder auswählen";return}
+    if(act==="photo")return openDlg(`<img class="photo-big" src="${photoURL[id]||""}" alt="Foto zum Befund"><div class="foot"><button class="btn" data-act="close">Schließen</button></div>`);
+    if(act==="showWalk"){const w=S.walks.find(x=>x.id===id);if(w)walkDlg(w);return}
+    if(act==="newArea")return areaDlg(null);
+    if(act==="editArea")return areaDlg(S.areas.find(a=>a.id===id));
+    if(act==="editLeit")return leitDlg();
+    if(act==="addFinding")return findingDlg(null);
+    if(act==="editFinding")return findingDlg(S.findings.find(f=>f.id===id));
+    if(act==="backup"){t.disabled=true;await makeBackup();t.disabled=false;return}
+    if(act==="restore")return closeDlg(),applyRestore();
+    if(act==="exportWalk"){t.disabled=true;const old=t.textContent;t.textContent="Wird erstellt …";try{await exportWalk(id,t.dataset.mode)}finally{t.disabled=false;t.textContent=old}return}
+    if(act==="check"){
+      const w=S.walks.find(x=>x.id===S.activeWalkId);if(!w)return;const c=t.dataset.c,v=t.dataset.v;
+      w.checks=w.checks||{};const nv=w.checks[c]===v?null:v;if(nv)w.checks[c]=nv;else delete w.checks[c];
+      t.parentElement.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===nv)));
+      $("#clScore").textContent=scoreText(w);saveWalkSoon(w);return;
+    }
+    if(act==="startWalk"){
+      const a=S.areas.find(x=>x.id===id);
+      const w={id:uid(),areaId:a.id,startedAt:new Date().toISOString(),status:"laufend",questions:S.leit.slice(),checklist:(a.checks||[]).slice(),answers:{},checks:{}};
+      await save("walks",w);S.walks.unshift(w);S.activeWalkId=w.id;S.walkRendered=null;render();window.scrollTo(0,0);return;
+    }
+    if(act==="endWalk"){
+      const w=S.walks.find(x=>x.id===S.activeWalkId);w.status="abgeschlossen";w.endedAt=new Date().toISOString();await saveWalkNow(w);
+      const nf=S.findings.filter(f=>f.walkId===w.id).length;S.activeWalkId=null;S.walkRendered=null;render();
+      openDlg(`<h2>Rundgang abgeschlossen</h2><p style="margin:0">${esc(areaName(w.areaId))} · ${nf} Befund${nf===1?"":"e"} erfasst.</p>
+        <p class="muted" style="margin:0">Exportiere den Rundgang als Excel-Datei mit Leitfragen, Checkliste, Befunden, Fotos und Maßnahmen.</p>
+        ${exportButtons(w.id)}<div class="foot"><button class="btn" data-act="close">Schließen</button></div>`);return;
+    }
+    if(act==="discardWalk"||act==="delWalk"){
+      const wid=act==="discardWalk"?S.activeWalkId:id;
+      if(!t.dataset.confirmed)return confirmDlg(act==="discardWalk"?"Rundgang verwerfen?":"Rundgang löschen?","Notizen, Checkliste, Befunde und Fotos dieses Rundgangs werden gelöscht.",act,wid,act==="discardWalk"?"Verwerfen":"Löschen");
+      closeDlg();clearTimeout(walkTimer);
+      for(const f of S.findings.filter(x=>x.walkId===wid)){await remove("findings",f.id);if(f.photo){await remove("photos",f.photo);URL.revokeObjectURL(photoURL[f.photo]);delete photoURL[f.photo]}}
+      await remove("walks",wid);S.findings=S.findings.filter(x=>x.walkId!==wid);S.walks=S.walks.filter(x=>x.id!==wid);
+      if(S.activeWalkId===wid)S.activeWalkId=null;S.walkRendered=null;toast(act==="discardWalk"?"Rundgang verworfen":"Rundgang gelöscht");render();return;
+    }
+    if(act==="saveArea"){
+      const name=$("#fName").value.trim();if(!name)return toast("Bitte einen Namen eingeben.");
+      const data={name,rhythm:Math.max(1,Math.min(90,parseInt($("#fRhythm").value)||7)),checks:$("#fChecks").value.split("\n").map(s=>s.trim()).filter(Boolean)};
+      let a=id?S.areas.find(x=>x.id===id):null;
+      if(a)Object.assign(a,data);else{a={id:uid(),...data,createdAt:new Date().toISOString()};S.areas.push(a)}
+      await save("areas",a);sortAll();closeDlg();toast("Bereich gespeichert");render();return;
+    }
+    if(act==="delArea"){
+      if(!t.dataset.confirmed)return confirmDlg("Bereich löschen?","Der Bereich verschwindet aus der Auswahl. Bisherige Rundgänge und Maßnahmen bleiben erhalten.","delArea",id,"Löschen");
+      await remove("areas",id);S.areas=S.areas.filter(a=>a.id!==id);closeDlg();toast("Bereich gelöscht");render();return;
+    }
+    if(act==="saveLeit"){
+      const qs=$("#fLeit").value.split("\n").map(s=>s.trim()).filter(Boolean);if(!qs.length)return toast("Mindestens eine Frage eintragen.");
+      S.leit=qs;await saveMeta("leit",qs);closeDlg();toast("Leitfragen gespeichert");render();return;
+    }
+    if(act==="saveFinding"){
+      const text=$("#fText").value.trim();if(!text)return toast("Bitte kurz beschreiben, was du gesehen hast.");
+      const catBtn=document.querySelector('#fCat [aria-pressed="true"]');const cat=catBtn?catBtn.dataset.v:"Sonstiges";
+      const has=$("#fHasAct").checked;const old=id?S.findings.find(f=>f.id===id):null;
+      const action=has?{what:$("#fWhat").value.trim(),who:$("#fWho").value.trim(),due:$("#fDue").value||"",status:old?.action?.status||"offen",doneAt:old?.action?.doneAt||null}:null;
+      t.disabled=true;
+      if(old){Object.assign(old,{text,cat,action});await save("findings",old);closeDlg();toast("Befund aktualisiert");refresh();return}
+      let photo=null;const file=$("#fPhoto")?.files?.[0];
+      if(file){const blob=await shrink(file);photo=uid();await idbDo("photos",os=>os.put(blob,photo));photoURL[photo]=URL.createObjectURL(blob)}
+      const w=S.walks.find(x=>x.id===S.activeWalkId);
+      const f={id:uid(),walkId:S.activeWalkId||null,areaId:w?w.areaId:"",text,cat,photo,action,createdAt:new Date().toISOString()};
+      await save("findings",f);S.findings.unshift(f);closeDlg();toast("Befund gespeichert");refresh();return;
+    }
+    if(act==="delFinding"){
+      if(!t.dataset.confirmed)return confirmDlg("Befund löschen?","Befund, Foto und zugehörige Maßnahme werden entfernt.","delFinding",id,"Löschen");
+      const f=S.findings.find(x=>x.id===id);await remove("findings",id);
+      if(f?.photo){await remove("photos",f.photo);URL.revokeObjectURL(photoURL[f.photo]);delete photoURL[f.photo]}
+      S.findings=S.findings.filter(x=>x.id!==id);closeDlg();toast("Befund gelöscht");refresh();return;
+    }
+    if(act==="done"||act==="reopen"){
+      const f=S.findings.find(x=>x.id===id);f.action.status=act==="done"?"erledigt":"offen";f.action.doneAt=act==="done"?new Date().toISOString():null;
+      await save("findings",f);if(act==="done")toast("Als erledigt markiert");
+      if(dlg.open){const w=S.walks.find(x=>x.id===f.walkId);if(w&&!S.activeWalkId)walkDlg(w)}
+      refresh();return;
+    }
+  }catch(err){console.error(err);t.disabled=false;toast("Das hat nicht geklappt. Bitte erneut versuchen.")}
+});
+document.addEventListener("input",e=>{
+  const q=e.target.dataset&&e.target.dataset.q;
+  if(q&&S.activeWalkId){const w=S.walks.find(x=>x.id===S.activeWalkId);if(!w)return;w.answers=w.answers||{};w.answers[q]=e.target.value;saveWalkSoon(w)}
+});
+let nameTimer=0;
+document.addEventListener("change",e=>{
+  if(e.target.id==="aarea"){S.aarea=e.target.value;render()}
+  if(e.target.id==="fRestore"){const f=e.target.files&&e.target.files[0];e.target.value="";if(f)readRestore(f)}
+  if(e.target.id==="fMyName"){saveMeta("name",e.target.value.trim()).then(updateBadge)}
+});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&S.activeWalkId){const w=S.walks.find(x=>x.id===S.activeWalkId);if(w)saveWalkNow(w).catch(()=>{})}});
+
+/* ---------- Start ---------- */
+render();
+(async()=>{
+  try{idb=await openIDB();await loadAll();await seedIfNew()}catch(e){S.failed=true;render();return}
+  const run=S.walks.find(w=>w.status==="laufend");if(run)S.activeWalkId=run.id;
+  S.ready=true;render();
+  if(navigator.storage&&navigator.storage.persist){try{S.persisted=await navigator.storage.persisted()||await navigator.storage.persist()}catch(_){}}
+  if(navigator.storage&&navigator.storage.estimate){try{const est=await navigator.storage.estimate();S.usageMB=(est.usage||0)/1048576}catch(_){}}
+  if(S.view==="setup")render();
+})();
+new MutationObserver(()=>{const u=$("#usage");if(u&&S.usageMB!=null)u.textContent=S.usageMB.toFixed(1)+" MB belegt"}).observe($("#app"),{childList:true});
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+
+</script>
+</body>
+</html>
